@@ -78,8 +78,6 @@ def webm_to_wav(webm_path: str, wav_path: str) -> None:
         stderr=subprocess.DEVNULL
     )
 
-# -------- Whisper (lazy loading) --------
-
 _model = None
 
 def get_whisper_model():
