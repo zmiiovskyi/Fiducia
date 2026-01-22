@@ -13,4 +13,4 @@ COPY . /app
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Запуск
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:8080"]
+CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:8080", "--timeout", "300"]
