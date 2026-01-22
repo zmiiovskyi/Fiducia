@@ -1,11 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+  <meta charset="UTF-8">
+  <title>Fiducia</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<h1>hello world</h1>
+  <h1>Аналіз мови</h1>
+
+  <div class="card">
+    <button id="startBtn" class="btn">Записати 5 сек</button>
+    <div id="status" class="status"></div>
+  </div>
+
+  <div id="resultCard" class="card" style="display:none;">
+    <div class="grid">
+      <div>
+        <div class="label">Оцінка якості мови</div>
+        <div class="value" id="score">0/10</div>
+        <div class="progress">
+          <div id="scoreBar"></div>
+        </div>
+      </div>
+      <div>
+        <div class="label">Темп мовлення</div>
+        <div class="value" id="wpm">0 слів/хв</div>
+
+        <div class="label" style="margin-top: 12px;">Слів-паразитів</div>
+        <div class="value" id="parasites">0</div>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="label">Розпізнаний текст (початок)</div>
+    <pre id="recognized"></pre>
+  </div>
+
+  <script src="/static/script.js"></script>
 </body>
 </html>
