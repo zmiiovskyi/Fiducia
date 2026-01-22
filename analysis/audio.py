@@ -77,6 +77,5 @@ def transcribe_and_analyze(webm_path: str, wav_path: str, duration: int):
     # розпізнавання
     result = model.transcribe(wav_path, language="uk", fp16=False)
     text = result["text"]
-
     # аналіз
     return analyze_text(text, duration)
