@@ -1,2 +1,4 @@
 flask
 sounddevice
+openai-whisper
+torch
