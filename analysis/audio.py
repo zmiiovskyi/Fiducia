@@ -68,7 +68,7 @@ def webm_to_wav(webm_path: str, wav_path: str):
     ], check=True)
 
 # Завантажуємо модель один раз
-model = whisper.load_model("small")
+model = whisper.load_model("tiny")
 
 def transcribe_and_analyze(webm_path: str, wav_path: str, duration: int):
     # конвертація
