@@ -1,81 +1,104 @@
-import os
 import re
 import subprocess
 import whisper
+import os
 
-PARASITES = [
-    "ну", "ти", "це", "так", "короче", "значить", "взагалі",
-    "типу", "якби", "тобто", "мм", "ее", "такс", "в принципі"
-]
+PARASITES = {
+    "ну", "короче", "значить", "типу",
+    "якби", "тобто", "мм", "ее", "такс",
+    "взагалі", "в принципі"
+}
+
+WORD_RE = re.compile(r"[а-щьюяґєії]+")
 
 def count_words(text: str):
-    words = re.findall(r"\w+", text.lower())
+    words = WORD_RE.findall(text.lower())
     return len(words), words
 
-def count_parasites(words: list):
+def count_parasites(words: list[str]):
     return sum(1 for w in words if w in PARASITES)
 
-def calc_wpm(word_count: int, seconds: int):
+def calc_wpm(word_count: int, seconds: float):
     if seconds <= 0:
-        return 0
+        return 0.0
     return round((word_count / seconds) * 60, 1)
 
-def score_language(audio_stats: dict):
-    wpm = audio_stats.get("words_per_min", 0)
+def score_language(stats: dict):
+    wpm = stats["words_per_min"]
 
     if wpm < 100:
-        tempo_score = 5 + (wpm - 60) / 40 * 5
+        tempo = 5 + (wpm - 60) / 40 * 5
     elif wpm <= 160:
-        tempo_score = 8 + (wpm - 100) / 60 * 2
+        tempo = 8 + (wpm - 100) / 60 * 2
     else:
-        tempo_score = 10 - (wpm - 160) / 60 * 5
-    tempo_score = max(0, min(10, tempo_score))
+        tempo = 10 - (wpm - 160) / 60 * 5
 
-    parasites = audio_stats.get("parasite_count", 0)
-    if parasites == 0:
-        parasite_score = 10
-    elif parasites <= 5:
-        parasite_score = 8
-    elif parasites <= 10:
-        parasite_score = 6
-    elif parasites <= 15:
-        parasite_score = 4
-    else:
-        parasite_score = 2
+    tempo = max(0, min(10, tempo))
 
-    overall = (tempo_score + parasite_score) / 2
-    return round(overall, 1)
+    p = stats["parasite_count"]
+    parasite = 10 if p == 0 else 8 if p <= 5 else 6 if p <= 10 else 4 if p <= 15 else 2
 
-def analyze_text(full_text: str, record_seconds: int):
-    word_count, words = count_words(full_text)
+    return round((tempo + parasite) / 2, 1)
+
+def convert_to_wav(src: str, dst: str):
+    subprocess.run(
+        ["ffmpeg", "-y", "-i", src, "-ar", "16000", "-ac", "1", dst],
+        check=True,
+        capture_output=True
+    )
+
+model = whisper.load_model("medium")
+
+def analyze_audio(audio_path: str):
+    base, ext = os.path.splitext(audio_path)
+    wav_path = base + ".wav"
+
+    convert_to_wav(audio_path, wav_path)
+
+    result = model.transcribe(
+        wav_path,
+        language="uk",
+        fp16=False,
+        temperature=0,
+        condition_on_previous_text=False,
+        no_speech_threshold=0.6
+    )
+
+    text = result["text"]
+    segments = result.get("segments", [])
+    duration = segments[-1]["end"] if segments else 0.0
+
+    word_count, words = count_words(text)
     parasite_count = count_parasites(words)
-    words_per_min = calc_wpm(word_count, record_seconds)
 
-    audio_stats = {
+    stats = {
         "total_words": word_count,
         "parasite_count": parasite_count,
-        "words_per_min": words_per_min,
-        "recognized_text": full_text[:200] + "..."
+        "words_per_min": calc_wpm(word_count, duration),
+        "language_score": 0,
+        "recognized_text": text[:300] + "…"
     }
-    audio_stats["language_score"] = score_language(audio_stats)
-    return audio_stats
 
-def webm_to_wav(webm_path: str, wav_path: str):
-    subprocess.run([
-        "ffmpeg", "-y", "-i", webm_path,
-        "-ar", "16000", "-ac", "1",
-        wav_path
-    ], check=True)
+    stats["language_score"] = score_language(stats)
+    return stats
 
-# Завантажуємо модель один раз
-model = whisper.load_model("tiny")
 
-def transcribe_and_analyze(webm_path: str, wav_path: str, duration: int):
-    # конвертація
-    webm_to_wav(webm_path, wav_path)
+def analyze_text(text: str):
+    """Аналіз готового тексту"""
+    word_count, words = count_words(text)
+    parasite_count = count_parasites(words)
 
-    # розпізнавання
-    result = model.transcribe(wav_path, language="uk", fp16=False)
-    text = result["text"]
-    # аналіз
-    return analyze_text(text, duration)
+    # Оцінюємо тривалість (приблизно 0.25 секунд на слово)
+    estimated_duration = word_count * 0.25
+
+    stats = {
+        "total_words": word_count,
+        "parasite_count": parasite_count,
+        "words_per_min": calc_wpm(word_count, estimated_duration),
+        "language_score": 0,
+        "recognized_text": text[:300] + "…" if len(text) > 300 else text
+    }
+
+    stats["language_score"] = score_language(stats)
+    return stats
+

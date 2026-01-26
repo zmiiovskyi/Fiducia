@@ -2,12 +2,16 @@ body {
   font-family: Arial, sans-serif;
   margin: 30px;
   background: #f4f4f4;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 h1 {
   color: #d32f2f;
   font-size: 36px;
   margin-bottom: 20px;
+  text-align: center;
 }
 
 .card {
@@ -26,6 +30,11 @@ h1 {
   border-radius: 6px;
   cursor: pointer;
   font-size: 16px;
+  transition: background 0.3s;
+}
+
+.btn:hover {
+  background: #1565c0;
 }
 
 .btn:disabled {
@@ -36,7 +45,7 @@ h1 {
 .status {
   margin-top: 10px;
   font-size: 14px;
-  color: #555;
+  min-height: 20px;
 }
 
 .grid {
@@ -48,11 +57,13 @@ h1 {
 .label {
   color: #666;
   font-size: 14px;
+  margin-bottom: 4px;
 }
 
 .value {
   font-size: 18px;
   font-weight: bold;
+  margin-bottom: 8px;
 }
 
 .progress {
@@ -73,7 +84,111 @@ h1 {
 
 pre {
   background: #f0f0f0;
-  padding: 10px;
+  padding: 12px;
   border-radius: 8px;
   overflow: auto;
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin-top: 8px;
+  border: 1px solid #ddd;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #e0e0e0;
+  margin: 20px 0;
+}
+
+/* ---- Секція "Завантажити файл" ---- */
+.upload-section h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+#uploadForm {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+#fileInput {
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fafafa;
+  cursor: pointer;
+  flex-grow: 1;
+}
+
+#uploadForm .btn {
+  background: #1976d2;
+}
+
+/* ---- Секція "Аналіз готового тексту" ---- */
+.text-section h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+#textForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#textInput {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: Arial, sans-serif;
+  resize: vertical;
+  min-height: 120px;
+  box-sizing: border-box;
+}
+
+#textInput:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+}
+
+.char-counter {
+  font-size: 14px;
+  color: #666;
+  text-align: right;
+}
+
+#textForm .btn {
+  background: #388e3c;
+  align-self: flex-start;
+}
+
+#textForm .btn:hover {
+  background: #2e7d32;
+}
+
+/* Повідомлення про помилку */
+.error {
+  color: #d32f2f;
+  background: #ffebee;
+  padding: 10px;
+  border-radius: 6px;
+  border-left: 4px solid #d32f2f;
+  margin-top: 10px;
+}
+
+/* Повідомлення про успіх */
+.success {
+  color: #388e3c;
+  background: #e8f5e9;
+  padding: 10px;
+  border-radius: 6px;
+  border-left: 4px solid #388e3c;
+  margin-top: 10px;
 }
