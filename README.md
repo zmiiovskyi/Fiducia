@@ -66,7 +66,6 @@ Fiducia/
 ├── static/           # Static files (CSS, JS, images)
 ├── templates/        # HTML templates
 ├── uploads/          # Uploaded files directory
-├── logs/            # Application logs
 ├── app.py           # Main application file
 ├── config.py        # Configuration settings
 ├── requirements.txt # Python dependencies
