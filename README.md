@@ -1,1 +1,74 @@
 # Fiducia
+
+A Flask-based web application for audio analysis and processing.
+
+## Features
+
+- Audio file upload and processing
+- Audio transcription using OpenAI Whisper
+- Text analysis capabilities
+- Web-based user interface
+- Docker support
+
+## Requirements
+
+- Python 3.7+
+- Flask
+- OpenAI Whisper
+- PyTorch
+- Gunicorn
+
+## Installation
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd Fiducia
+```
+
+2. Create a virtual environment:
+```bash
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+```
+
+3. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+## Usage
+
+### Development
+Run the application in development mode:
+```bash
+python app.py
+```
+
+### Production
+Use Gunicorn for production deployment:
+```bash
+gunicorn -w 4 app:app
+```
+
+### Docker
+Build and run using Docker:
+```bash
+docker build -t fiducia .
+docker run -p 5000:5000 fiducia
+```
+
+## Project Structure
+
+```
+Fiducia/
+├── analysis/          # Audio and text analysis modules
+├── static/           # Static files (CSS, JS, images)
+├── templates/        # HTML templates
+├── uploads/          # Uploaded files directory
+├── logs/            # Application logs
+├── app.py           # Main application file
+├── config.py        # Configuration settings
+├── requirements.txt # Python dependencies
+└── Dockerfile       # Docker configuration
+```
