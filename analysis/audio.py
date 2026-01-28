@@ -45,21 +45,34 @@ def analyze_text(text, duration=None):
     }
 
 def analyze_audio(path):
+    import tempfile
+    import subprocess
+    import os
+
     tmp = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
     tmp.close()
 
-    subprocess.run([
+    cmd = [
         "ffmpeg",
         "-y",
         "-i", path,
         "-ar", "16000",
         "-ac", "1",
         tmp.name
-    ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    ]
 
-    result = model.transcribe(tmp.name, language="uk")
+    res = subprocess.run(cmd)
+
+    if res.returncode != 0:
+        os.remove(tmp.name)
+        raise RuntimeError("ffmpeg error")
+
+    result = model.transcribe(tmp.name, language="uk", fp16=False)
     text = result.get("text", "").strip()
 
     os.remove(tmp.name)
+
+    if not text:
+        raise ValueError("speech not recognized")
 
     return analyze_text(text)
