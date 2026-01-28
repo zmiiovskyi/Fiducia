@@ -45,19 +45,6 @@ Run the application in development mode:
 python app.py
 ```
 
-### Production
-Use Gunicorn for production deployment:
-```bash
-gunicorn -w 4 app:app
-```
-
-### Docker
-Build and run using Docker:
-```bash
-docker build -t fiducia .
-docker run -p 5000:5000 fiducia
-```
-
 ## Project Structure
 
 ```
@@ -68,6 +55,5 @@ Fiducia/
 ├── uploads/          # Uploaded files directory
 ├── app.py           # Main application file
 ├── config.py        # Configuration settings
-├── requirements.txt # Python dependencies
-└── Dockerfile       # Docker configuration
+└── requirements.txt # Python dependencies
 ```
