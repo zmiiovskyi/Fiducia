@@ -15,7 +15,6 @@ A Flask-based web application for audio analysis and processing.
 - Flask
 - OpenAI Whisper
 - PyTorch
-- Gunicorn
 
 ## Installation
 
