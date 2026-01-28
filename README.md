@@ -22,7 +22,7 @@ A Flask-based web application for audio analysis and processing.
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/zmiiovskyi/Fiducia.git
 cd Fiducia
 ```
 
