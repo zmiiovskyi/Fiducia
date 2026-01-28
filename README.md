@@ -49,7 +49,7 @@ python app.py
 
 ```
 Fiducia/
-├── analysis/          # Audio and text analysis modules
+├── analysis/          # Analysis modules
 ├── static/           # Static files (CSS, JS, images)
 ├── templates/        # HTML templates
 ├── uploads/          # Uploaded files directory
