@@ -8,7 +8,6 @@ A Flask-based web application for audio analysis and processing.
 - Audio transcription using OpenAI Whisper
 - Text analysis capabilities
 - Web-based user interface
-- Docker support
 
 ## Requirements
 
