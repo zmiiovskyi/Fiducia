@@ -1,104 +1,78 @@
+import os
 import re
 import subprocess
+import tempfile
+
 import whisper
-import os
+from config import *
 
-PARASITES = {
-    "ну", "короче", "значить", "типу",
-    "якби", "тобто", "мм", "ее", "такс",
-    "взагалі", "в принципі"
-}
+model = whisper.load_model(WHISPER_MODEL)
 
-WORD_RE = re.compile(r"[а-щьюяґєії]+")
+WORD_RE = re.compile(r"[а-щьюяґєії']+")
 
-def count_words(text: str):
+
+def count_words(text):
     words = WORD_RE.findall(text.lower())
     return len(words), words
 
-def count_parasites(words: list[str]):
-    return sum(1 for w in words if w in PARASITES)
 
-def calc_wpm(word_count: int, seconds: float):
-    if seconds <= 0:
-        return 0.0
-    return round((word_count / seconds) * 60, 1)
+def analyze_text(text, duration=None):
+    if len(text) < MIN_TEXT_LENGTH:
+        raise ValueError("text too short")
 
-def score_language(stats: dict):
-    wpm = stats["words_per_min"]
+    words_count, words = count_words(text)
+    parasites = sum(1 for w in words if w in PARASITES)
 
-    if wpm < 100:
-        tempo = 5 + (wpm - 60) / 40 * 5
-    elif wpm <= 160:
-        tempo = 8 + (wpm - 100) / 60 * 2
-    else:
-        tempo = 10 - (wpm - 160) / 60 * 5
+    if not duration:
+        duration = (words_count / 150) * 60
 
-    tempo = max(0, min(10, tempo))
+    wpm = round((words_count / duration) * 60, 1)
 
-    p = stats["parasite_count"]
-    parasite = 10 if p == 0 else 8 if p <= 5 else 6 if p <= 10 else 4 if p <= 15 else 2
+    score = 10
+    if wpm < 80 or wpm > 180:
+        score -= 2
+    if parasites > 5:
+        score -= 2
 
-    return round((tempo + parasite) / 2, 1)
-
-def convert_to_wav(src: str, dst: str):
-    subprocess.run(
-        ["ffmpeg", "-y", "-i", src, "-ar", "16000", "-ac", "1", dst],
-        check=True,
-        capture_output=True
-    )
-
-model = whisper.load_model("medium")
-
-def analyze_audio(audio_path: str):
-    base, ext = os.path.splitext(audio_path)
-    wav_path = base + ".wav"
-
-    convert_to_wav(audio_path, wav_path)
-
-    result = model.transcribe(
-        wav_path,
-        language="uk",
-        fp16=False,
-        temperature=0,
-        condition_on_previous_text=False,
-        no_speech_threshold=0.6
-    )
-
-    text = result["text"]
-    segments = result.get("segments", [])
-    duration = segments[-1]["end"] if segments else 0.0
-
-    word_count, words = count_words(text)
-    parasite_count = count_parasites(words)
-
-    stats = {
-        "total_words": word_count,
-        "parasite_count": parasite_count,
-        "words_per_min": calc_wpm(word_count, duration),
-        "language_score": 0,
-        "recognized_text": text[:300] + "…"
+    return {
+        "total_words": words_count,
+        "parasite_count": parasites,
+        "words_per_min": wpm,
+        "duration": round(duration, 1),
+        "language_score": max(score, 0),
+        "recognized_text": text[:500],
+        "confidence": "high",
     }
 
-    stats["language_score"] = score_language(stats)
-    return stats
+def analyze_audio(path):
+    import tempfile
+    import subprocess
+    import os
 
+    tmp = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
+    tmp.close()
 
-def analyze_text(text: str):
-    """Аналіз готового тексту"""
-    word_count, words = count_words(text)
-    parasite_count = count_parasites(words)
+    cmd = [
+        "ffmpeg",
+        "-y",
+        "-i", path,
+        "-ar", "16000",
+        "-ac", "1",
+        tmp.name
+    ]
 
-    # Оцінюємо тривалість (приблизно 0.25 секунд на слово)
-    estimated_duration = word_count * 0.25
+    res = subprocess.run(cmd)
 
-    stats = {
-        "total_words": word_count,
-        "parasite_count": parasite_count,
-        "words_per_min": calc_wpm(word_count, estimated_duration),
-        "language_score": 0,
-        "recognized_text": text[:300] + "…" if len(text) > 300 else text
-    }
+    if res.returncode != 0:
+        os.remove(tmp.name)
+        raise RuntimeError("ffmpeg error")
 
-    stats["language_score"] = score_language(stats)
-    return stats
+    result = model.transcribe(tmp.name, language="uk", fp16=False)
+    text = result.get("text", "").strip()
 
+    os.remove(tmp.name)
+
+    if not text:
+        raise ValueError("speech not recognized")
+
+    return analyze_text(text)
